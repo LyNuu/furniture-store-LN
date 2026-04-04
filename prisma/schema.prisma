@@ -7,70 +7,134 @@ generator client {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  firstName String?  @map("first_name")
-  password  String
-  createdAt DateTime @default(now()) @map("created_at")
+  id            String    @id @default(uuid())
+  email         String    @unique
+  passwordHash  String
+  firstName     String?
+  lastName      String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
-  orders    Order[]
-
-  @@map("users_market")
+  favorites     Favorite[]
+  cartItems     CartItem[]
+  orders        Order[]
+  reviews       Review[]
+  aiDialogs     AiMessage[]
 }
 
-model Item {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  price       Int
-  quantity    Int      @default(0)
-  imageUrl    String?  
-  createdAt   DateTime @default(now()) @map("created_at")
+enum Role {
+  USER
+  ADMIN
+}
 
+// --- КАТАЛОГ ТОВАРОВ ---
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  price       Decimal  @db.Decimal(10, 2)
+  stock       Int      @default(0)
+  images      String[]
+  
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  favoritedBy Favorite[]
+  cartItems   CartItem[]
   orderItems  OrderItem[]
-
-  @@map("items_market")
+  reviews     Review[]
 }
 
-enum OrderStatus {
-  PENDING   
-  PAID      
-  CANCELLED 
-  DELIVERED
+model Category {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  products Product[]
 }
 
+// --- КОРЗИНА И ИЗБРАННОЕ ---
+model Favorite {
+  id        String  @id @default(uuid())
+  userId    String
+  productId String
+  user      User    @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+model CartItem {
+  id        String  @id @default(uuid())
+  quantity  Int     @default(1)
+  userId    String
+  productId String
+  user      User    @relation(fields: [userId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+}
+
+// --- ЗАКАЗЫ ---
 model Order {
-  id        Int         @id @default(autoincrement())
-  status    OrderStatus @default(PENDING)
-  userId    Int         @map("user_id")
-  user      User        @relation(fields: [userId], references: [id])
-  items     OrderItem[] 
-  createdAt DateTime    @default(now()) @map("created_at")
+  id              String      @id @default(uuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  status          OrderStatus @default(PENDING)
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  
+  address         String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
-  @@map("orders_market")
+  items           OrderItem[]
 }
 
 model OrderItem {
-  id        Int   @id @default(autoincrement())
-  quantity  Int   @default(1)
-  price     Int  
+  id              String  @id @default(uuid())
+  orderId         String
+  productId       String
+  quantity        Int
+  priceAtPurchase Decimal @db.Decimal(10, 2)
 
-  orderId   Int   @map("order_id")
-  order     Order @relation(fields: [orderId], references: [id])
-
-  itemId    Int   @map("item_id")
-  item      Item  @relation(fields: [itemId], references: [id])
-
-  @@unique([orderId, itemId]) 
-  @@map("order_items_market")
+  order     Order   @relation(fields: [orderId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
 }
 
-model Blog {
-  id          Int      @id @default(autoincrement())
-  title       String   
-  description String   
-  imageUrl    String?  @map("image_url")
-  createdAt   DateTime @default(now()) @map("created_at")
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+  RETURNED
+  CANCELLED
+}
 
-  @@map("blogs_market")
+// --- ДОПОЛНИТЕЛЬНО ---
+model NewsletterSubscriber {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+}
+
+model AiMessage {
+  id        String   @id @default(uuid())
+  userId    String?
+  role      String   // 'user' | 'assistant'
+  content   String
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  rating    Int
+  comment   String?
+  userId    String
+  productId String
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
 }
