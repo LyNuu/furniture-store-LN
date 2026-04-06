@@ -1,10 +1,10 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 @Injectable()
 export class AiService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async chat(userId: string, content: string) {
     try {
@@ -27,7 +27,6 @@ export class AiService {
         content: msg.content,
       }));
 
-      // 3. Запрос к нейронке
       const response = await axios.post(
         'https://openrouter.ai/api/v1/chat/completions',
         {
@@ -61,7 +60,8 @@ export class AiService {
 
       return savedAiMsg;
     } catch (error) {
-      console.error('OpenRouter Error:', error.response?.data || error.message);
+      const axiosError = error as AxiosError;
+      console.error('OpenRouter Error:', axiosError?.response?.data || axiosError?.message || String(error));
       throw new InternalServerErrorException('Ошибка при общении с AI');
     }
   }
@@ -70,7 +70,7 @@ export class AiService {
     return this.prisma.aiMessage.findMany({
       where: { userId },
       orderBy: { createdAt: 'asc' },
-      take: 50, 
+      take: 50,
     });
   }
 }

@@ -11,7 +11,6 @@ import { Role } from '@prisma/client';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) { }
 
-  // ТОЛЬКО АДМИН: Создание товара
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.ADMIN)

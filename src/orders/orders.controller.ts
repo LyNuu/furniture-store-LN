@@ -8,7 +8,7 @@ export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post()
-  @UseGuards(AuthGuard('jwt')) // ТЕПЕРЬ ОБЯЗАТЕЛЬНО
+  @UseGuards(AuthGuard('jwt')) 
   async create(@Body() createOrderDto: CreateOrderDto, @Req() req) {
     const userId = req.user.userId; 
     

@@ -3,7 +3,7 @@ version: '3.8'
 services:
   api:
     build: .
-    container_name: lynuu-backend
+    container_name: lynuu-backend-v1.0
     ports:
       - "3000:3000"
     env_file:

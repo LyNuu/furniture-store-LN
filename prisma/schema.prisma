@@ -28,7 +28,6 @@ enum Role {
   ADMIN
 }
 
-// --- КАТАЛОГ ТОВАРОВ ---
 model Product {
   id          String   @id @default(uuid())
   name        String
@@ -55,7 +54,6 @@ model Category {
   products Product[]
 }
 
-// --- КОРЗИНА И ИЗБРАННОЕ ---
 model Favorite {
   id        String  @id @default(uuid())
   userId    String
@@ -77,7 +75,6 @@ model CartItem {
   @@unique([userId, productId])
 }
 
-// --- ЗАКАЗЫ ---
 model Order {
   id              String      @id @default(uuid())
   userId          String
@@ -112,7 +109,6 @@ enum OrderStatus {
   CANCELLED
 }
 
-// --- ДОПОЛНИТЕЛЬНО ---
 model NewsletterSubscriber {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -122,7 +118,7 @@ model NewsletterSubscriber {
 model AiMessage {
   id        String   @id @default(uuid())
   userId    String?
-  role      String   // 'user' | 'assistant'
+  role      String  
   content   String
   user      User?    @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
