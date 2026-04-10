@@ -18,7 +18,7 @@ export class OrdersController {
   @Get('my-orders')
   @UseGuards(AuthGuard('jwt'))
   async findMyOrders(@Req() req) {
-    return await this.ordersService.findAllByUser(req.user.id);
+    return await this.ordersService.findAllByUser(req.user.userId);
   }
 
   @Get(':id')

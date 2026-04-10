@@ -9,11 +9,11 @@ export class AiController {
 
   @Post('chat')
   async chat(@Req() req: any, @Body('content') content: string) {
-    return this.aiService.chat(req.user.id, content);
+    return this.aiService.chat(req.user.userId, content);
   }
 
   @Get('history')
   async getHistory(@Req() req: any) {
-    return this.aiService.getHistory(req.user.id);
+    return this.aiService.getHistory(req.user.userId);
   }
 }
